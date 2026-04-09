@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Now | HEARTBEAT Premium</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-body">
+    <!-- Watch Backdrop -->
+    <div id="watch-backdrop" class="watch-backdrop"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar scrolled">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo">
+                    HEART<span class="heart-pulse">❤️</span>BEAT
+                </a>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#">Movies</a></li>
+                    <li><a href="#">Series</a></li>
+                </ul>
+            </div>
+            <div class="nav-right">
+                <a href="index.html" class="btn btn-secondary">
+                    <span class="btn-icon">⬅️</span>
+                    <span class="btn-text">← Back</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main id="watch-content" class="container">
+        <div class="watch-container">
+            <div class="watch-poster">
+                <img id="watch-poster-img" src="" alt="Poster">
+            </div>
+
+            <div class="watch-info">
+                <h1 id="watch-title" class="watch-title">Loading...</h1>
+                <div class="modal-meta watch-meta">
+                    <span class="badge">4K Ultra HD</span>
+                    <span id="watch-date" class="publish-date">Published: ...</span>
+                    <span id="watch-category" class="badge">Category</span>
+                </div>
+                
+                <div class="watch-actions">
+                    <button id="watch-now-btn" class="btn btn-primary btn-large">▶ Watch Now</button>
+                    <button class="btn btn-secondary btn-large">+ Add to List</button>
+                </div>
+
+                <div class="watch-about-section">
+                    <h3 class="watch-about-title">About Series</h3>
+                    <p id="watch-desc" class="watch-desc">
+                        Loading description...
+                    </p>
+                </div>
+
+                <!-- Episodes Section -->
+                <div id="episodes-section" class="hidden-initial mt-3">
+                    <h3 class="watch-about-title">Episodes</h3>
+                    <div id="episodes-grid" class="episodes-grid">
+                        <!-- Dynamic episodes -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations Section -->
+        <section class="recommendations-section">
+            <h2 class="row-title">Recommended for You</h2>
+            <div id="recommendations-container" class="row-cards">
+                <!-- Recommendations will be injected here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer footer-container watch-footer">
+        <p>&copy; 2026 HEARTBEAT Premium. All rights reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        // Specific logic for Watch Page
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const item = app.content.find(i => i.id === id);
+
+            if (item) {
+                document.title = `${item.title} | HEARTBEAT`;
+                document.getElementById('watch-backdrop').style.backgroundImage = `url('${item.thumbLandscape}')`;
+                document.getElementById('watch-poster-img').src = item.thumbPortrait;
+                document.getElementById('watch-title').textContent = item.title;
+                document.getElementById('watch-desc').textContent = item.desc;
+                document.getElementById('watch-category').textContent = item.category;
+                
+                const date = new Date(item.publishDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                document.getElementById('watch-date').textContent = `Published: ${date}`;
+
+                // Watch Now Button
+                const watchBtn = document.getElementById('watch-now-btn');
+                if (item.type === 'Series') {
+                    watchBtn.textContent = '📜 View Episodes';
+                    watchBtn.onclick = () => {
+                        document.getElementById('episodes-section').scrollIntoView({ behavior: 'smooth' });
+                    };
+                    
+                    // Render Episodes
+                    const epSection = document.getElementById('episodes-section');
+                    const epGrid = document.getElementById('episodes-grid');
+                    if (item.episodes && item.episodes.length > 0) {
+                        epSection.style.display = 'block';
+                        epGrid.innerHTML = item.episodes.map((ep, index) => `
+                            <a href="${ep.link}" target="_blank" class="episode-card">
+                                <div class="episode-info">
+                                    <h4>${ep.title}</h4>
+                                    <p>Episode ${index + 1}</p>
+                                </div>
+                                <div class="ep-play-btn">▶</div>
+                            </a>
+                        `).join('');
+                    }
+                } else {
+                    watchBtn.onclick = () => {
+                        if (item.videoLink) window.open(item.videoLink, '_blank');
+                        else alert('Streaming link not available yet.');
+                    };
+                }
+
+                // Render Recommendations
+                const recommendations = app.content.filter(i => i.category === item.category && i.id !== item.id);
+                const recContainer = document.getElementById('recommendations-container');
+                if (recommendations.length > 0) {
+                    recContainer.innerHTML = recommendations.map(rec => `
+                        <article class="card" data-id="${rec.id}">
+                            <img class="card-thumb" src="${rec.thumbPortrait}" alt="${rec.title}" loading="lazy">
+                            <div class="card-overlay">
+                                <span class="play-icon">▶</span>
+                            </div>
+                            <div class="card-info">
+                                <h3 class="card-title">${rec.title}</h3>
+                                <div class="card-meta">
+                                    <span>HD</span>
+                                    <span>${new Date(rec.publishDate).getFullYear()}</span>
+                                </div>
+                            </div>
+                        </article>
+                    `).join('');
+                } else {
+                    recContainer.innerHTML = '<p class="loading-status">Check back later for more content in this category.</p>';
+                }
+
+            } else {
+                document.getElementById('watch-title').textContent = "Content Not Found";
+            }
+        });
+    </script>
+</body>
+</html>

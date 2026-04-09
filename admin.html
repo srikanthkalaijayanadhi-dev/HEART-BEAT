@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEARTBEAT Admin | Content Management</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Auth Check -->
+    <script src="script.js"></script>
+    <script>
+        // Critical: Check auth before rendering the rest of the page
+        if (!auth.isLoggedIn()) {
+            window.location.href = 'login.html';
+        }
+    </script>
+</head>
+<body class="admin-body">
+
+    <!-- Navigation Bar -->
+    <nav class="navbar scrolled">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo">
+                    HEART<span class="heart-pulse">❤️</span>BEAT <span class="admin-badge-text">ADMIN</span>
+                </a>
+            </div>
+            <div class="nav-right">
+                <button onclick="auth.logout()" class="btn btn-secondary logout-link">
+                    <span class="btn-icon">🚪</span>
+                    <span class="btn-text">Logout</span>
+                </button>
+                <a href="index.html" class="btn btn-secondary">
+                    <span class="btn-icon">🏠</span>
+                    <span class="btn-text">← Back to Website</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="admin-container">
+        <div class="admin-header">
+            <h1 class="admin-title">Content Dashboard <span id="edit-mode-tag" class="edit-mode-indicator hidden-initial">EDIT MODE</span></h1>
+            <p class="admin-subtitle">Create and manage your OTT library from here.</p>
+        </div>
+
+        <div class="admin-grid">
+            <!-- Create Content Section -->
+            <section class="admin-card">
+                <h2 class="admin-section-title">
+                    <span>➕</span> Add New Content
+                </h2>
+                <form id="admin-form">
+                    <div class="form-group">
+                        <label for="title">Content Title</label>
+                        <input type="text" id="title" placeholder="e.g. Inception" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="thumbPortrait">Portrait Poster URL (2:3)</label>
+                        <input type="url" id="thumbPortrait" placeholder="Vertical poster image..." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="thumbLandscape">Landscape Backdrop URL (16:9)</label>
+                        <input type="url" id="thumbLandscape" placeholder="Horizontal background image..." required>
+                        <span class="form-hint">Used for the Hero Banner and Watch Page background.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" required>
+                            <option value="Action">Action</option>
+                            <option value="Sci-Fi">Sci-Fi</option>
+                            <option value="Thriller">Thriller</option>
+                            <option value="Comedy">Comedy</option>
+                            <option value="Trending Now">Trending Now</option>
+                            <option value="Latest Uploads">Latest Uploads</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="publishDate">Publish Date</label>
+                        <input type="date" id="publishDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="content">Description / Content</label>
+                        <textarea id="content" rows="4" placeholder="Briefly describe the plot..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contentType">Content Type</label>
+                        <select id="contentType" required onchange="app.toggleStreamTypeFields()">
+                            <option value="Movie">Movie</option>
+                            <option value="Series">Series</option>
+                        </select>
+                    </div>
+
+                    <div id="movie-fields" class="form-group">
+                        <label for="videoLink">Watch Now Link (Stream URL)</label>
+                        <input type="url" id="videoLink" placeholder="https://example.com/movie.mp4">
+                        <span class="form-hint">The direct link used when 'Watch Now' is clicked.</span>
+                    </div>
+
+                    <div id="series-fields" class="form-group hidden-initial">
+                        <label>Episodes Management</label>
+                        <div id="episodes-container" class="episodes-admin-list">
+                            <!-- Episode rows will be added here -->
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-small full-width-mt" onclick="app.addEpisodeRow()">
+                            ➕ Add New Episode
+                        </button>
+                    </div>
+
+                    <div class="form-group featured-checkbox-group">
+                        <input type="checkbox" id="is-featured" class="checkbox-input">
+                        <label for="is-featured" class="checkbox-label">Show in Hero (Featured) 🌟</label>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="btn btn-primary publish-submit-btn">
+                        🚀 Publish to Website
+                    </button>
+                    <button type="button" id="cancel-edit-btn" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem; display: none;">
+                        Cancel Editing
+                    </button>
+                </form>
+            </section>
+
+            <!-- Manage Content Section -->
+            <section class="admin-card">
+                <h2 class="admin-section-title">
+                    <span>📂</span> Manage Library
+                </h2>
+                <div class="content-list" id="admin-content-list">
+                    <!-- Dynamic list items will be injected here -->
+                    <div class="loading-status">
+                        <p>Loading content...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    </main>
+
+    <script>
+        // Set default date to today
+        document.getElementById('publishDate').valueAsDate = new Date();
+    </script>
+</body>
+</html>
