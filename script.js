@@ -3,8 +3,10 @@
  * Handles dynamic content rendering, persistence, and cinematic redirection.
  */
 
-// Default Content Library (Empty for user-driven experience)
-const DEFAULT_CONTENT = [];
+// Supabase Configuration
+const SB_URL = 'https://iynkabsrmxszglezxozr.supabase.co';
+const SB_KEY = 'sb_publishable_Q2BkE5FKQ2SR3hKpKH2zgA_7bJVoG98';
+const supabase = (window.supabase) ? window.supabase.createClient(SB_URL, SB_KEY) : null;
 
 class StreamVault {
     constructor() {
@@ -14,53 +16,81 @@ class StreamVault {
         this.init();
     }
 
-    init() {
-        this.loadContent();
+    async init() {
+        await this.loadContent();
         this.setupEventListeners();
-        this.renderAll();
     }
 
-    // Load content from defaults and localStorage
-    loadContent() {
-        const stored = JSON.parse(localStorage.getItem('streamvault_content') || '[]');
-        this.content = [...DEFAULT_CONTENT, ...stored];
-    }
-
-    // Save or Update content
-    saveContent(newItem) {
-        let stored = JSON.parse(localStorage.getItem('streamvault_content') || '[]');
-        
-        if (this.editMode && this.currentEditId) {
-            // Update mode
-            const index = stored.findIndex(item => item.id === this.currentEditId);
-            if (index !== -1) {
-                stored[index] = { ...newItem, id: this.currentEditId };
-            }
-            this.exitEditMode();
-        } else {
-            // Create mode
-            if (newItem.featured) {
-                stored = stored.map(item => ({ ...item, featured: false }));
-            }
-            stored.push(newItem);
+    // Load content from Supabase
+    async loadContent() {
+        if (!supabase) {
+            console.warn('Supabase not initialized. Using local defaults.');
+            this.content = [];
+            this.renderAll();
+            return;
         }
-        
-        localStorage.setItem('streamvault_content', JSON.stringify(stored));
-        this.loadContent();
+
+        const { data, error } = await supabase
+            .from('content')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error loading content:', error);
+            return;
+        }
+
+        this.content = data || [];
         this.renderAll();
+        if (document.getElementById('admin-content-list')) {
+            this.renderAdminList();
+        }
     }
 
-    // Delete content
-    deleteContent(id) {
-        let stored = JSON.parse(localStorage.getItem('streamvault_content') || '[]');
-        stored = stored.filter(item => item.id !== id);
-        localStorage.setItem('streamvault_content', JSON.stringify(stored));
-        this.loadContent();
-        this.renderAll();
+    // Save or Update content in Supabase
+    async saveContent(newItem) {
+        if (!supabase) return;
+
+        // If featured is true, we should ideally unset other featured items,
+        // but for simplicity and RLS, we'll handle the 'featured' logic in the UI/Query
+        // or just let it overwrite.
+        if (newItem.featured) {
+            // Optional: You could add logic here to unset 'featured' on other items via an RPC or multiple calls
+        }
+
+        const { error } = await supabase
+            .from('content')
+            .upsert(newItem, { onConflict: 'id' });
+
+        if (error) {
+            console.error('Error saving content:', error);
+            alert('Failed to save content: ' + error.message);
+            return;
+        }
+
+        await this.loadContent();
+    }
+
+    // Delete content from Supabase
+    async deleteContent(id) {
+        if (!supabase) return;
+
+        const { error } = await supabase
+            .from('content')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('Error deleting content:', error);
+            alert('Failed to delete content.');
+            return;
+        }
+
+        await this.loadContent();
     }
 
     // Duplicate content
-    duplicateItem(id) {
+    async duplicateItem(id) {
         const item = this.content.find(i => i.id === id);
         if (!item) return;
 
@@ -68,15 +98,21 @@ class StreamVault {
             ...item,
             id: 'user-' + Date.now(),
             title: item.title + ' (Copy)',
-            featured: false
+            featured: false,
+            created_at: new Date().toISOString()
         };
 
-        let stored = JSON.parse(localStorage.getItem('streamvault_content') || '[]');
-        stored.push(newItem);
-        localStorage.setItem('streamvault_content', JSON.stringify(stored));
-        this.loadContent();
-        this.renderAdminList();
-        this.renderAll();
+        const { error } = await supabase
+            .from('content')
+            .insert(newItem);
+
+        if (error) {
+            console.error('Error duplicating:', error);
+            alert('Failed to duplicate.');
+            return;
+        }
+
+        await this.loadContent();
         alert('Content Duplicated!');
     }
 
@@ -172,7 +208,7 @@ class StreamVault {
         // Admin Form
         const adminForm = document.getElementById('admin-form');
         if (adminForm) {
-            adminForm.addEventListener('submit', (e) => {
+            adminForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
                 // Collect episodes if series
@@ -197,14 +233,17 @@ class StreamVault {
                     publishDate: document.getElementById('publishDate').value || new Date().toISOString().split('T')[0],
                     featured: document.getElementById('is-featured').checked,
                     videoLink: document.getElementById('videoLink').value,
-                    episodes: episodes
+                    episodes: episodes,
+                    created_at: new Date().toISOString()
                 };
-                this.saveContent(newItem);
+
+                const wasEdit = this.editMode;
+                await this.saveContent(newItem);
+                
                 adminForm.reset();
                 document.getElementById('publishDate').valueAsDate = new Date();
-                this.exitEditMode(); // Ensure UI resets
-                this.renderAdminList();
-                alert(this.editMode ? 'Content Updated!' : 'Content Published!');
+                this.exitEditMode(); 
+                alert(wasEdit ? 'Content Updated!' : 'Content Published!');
             });
 
             document.getElementById('cancel-edit-btn').addEventListener('click', () => this.exitEditMode());

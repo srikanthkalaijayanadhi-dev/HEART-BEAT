@@ -10,6 +10,80 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css">
+    <!-- Ad Script -->
+    <script>
+      (function(i,n,p,a,g,e){
+        i.inpagepush = i.inpagepush || function() {
+          (i.inpagepush.q=(i.inpagepush.q||[])).push(arguments)
+        };
+        var s=n.getElementsByTagName('head')[0];
+        var q=n.createElement('script'); q.async=1;
+        q.src='//static.qualiclicks.com/inpage/inpage.js';
+        s.appendChild(q);
+        i.inpagepush('init', {
+          host: 'xml.qualiclicks.com',
+          feed: 1193313,
+          auth : '1Th6',
+          subid: '',
+          refresh: 120,
+          position: 'top',
+          slots: 2,
+          query : '',
+          nodesrc : true
+        });
+        i.inpagepush('show');
+      })(window, document);
+    </script>
+    <!-- Video Ad Script (Prebid/Ezmob) -->
+    <script type="text/javascript" src="https://docdn.ezmob.com/prebid.js" async></script>
+    <script>
+        var pbjs = pbjs || {};
+        pbjs.que = pbjs.que || [];
+        
+        pbjs.que.push(function() {
+            var adUnits = [{
+                code: 'container-1',
+                mediaTypes: {
+                    video: {
+                        context: 'outstream',
+                        playerSize: [300, 250],
+                        renderer: {
+                            url: 'https://docdn.ezmob.com/outstream_pb.js',
+                            render: renderOutstream
+                        }
+                    }
+                },
+                bids: [{
+                    bidder: 'adkernel',
+                    params: {
+                      zoneId: 351925,
+                      host: 'cpm.ezmob.com'
+                    }
+                }]
+            }];
+            pbjs.addAdUnits(adUnits);
+            pbjs.requestBids({
+                bidsBackHandler: function(bidResponses) {
+                    process('container-1');
+                }
+            });
+        });
+
+        function process(adUnit) {
+            var bidResponses = pbjs.getHighestCpmBids(adUnit);
+            if (bidResponses.length == 0) return;
+            var bid = bidResponses[0];
+            pbjs.renderAd(document, bid.adId);
+        }
+        
+        function renderOutstream(bid) {
+            OutstreamPlayerPB(bid, {
+                displayMode: 'floating',
+                transitions: true,
+                vpaidMode: 2
+            });
+        }
+    </script>
 </head>
 <body class="admin-body">
     <!-- Watch Backdrop -->
@@ -72,6 +146,19 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Sponsored Video Ad -->
+        <div class="ad-billing-area mt-4">
+            <div id="container-1"></div>
+        </div>
+
+        <!-- Medium Rectangle Ad (300x250) -->
+        <div class="ad-billing-area">
+            <SCRIPT TYPE="text/javascript">
+                var __jscp=function(){for(var b=0,a=window;a!=a.parent;)++b,a=a.parent;if(a=window.parent==window?document.URL:document.referrer){var c=a.indexOf("://");0<=c&&(a=a.substring(c+3));c=a.indexOf("/");0<=c&&(a=a.substring(0,c))}var b={pu:a,"if":b,rn:new Number(Math.floor(99999999*Math.random())+1)},a=[],d;for(d in b)a.push(d+"="+encodeURIComponent(b[d]));return encodeURIComponent(a.join("&"))};
+                document.write('<S' + 'CRIPT TYPE="text/javascript" SRC="//cpm.ezmob.com/tag?zone_id=351927&size=300x250&subid=&j=' + __jscp() + '"></S' + 'CRIPT>');
+            </SCRIPT>
+        </div>
 
         <!-- Recommendations Section -->
         <section class="recommendations-section">
@@ -82,12 +169,22 @@
         </section>
     </main>
 
+    <!-- Bottom Leaderboard Ad (728x90) -->
+    <div class="ad-billing-area">
+        <SCRIPT TYPE="text/javascript">
+            var __jscp=function(){for(var b=0,a=window;a!=a.parent;)++b,a=a.parent;if(a=window.parent==window?document.URL:document.referrer){var c=a.indexOf("://");0<=c&&(a=a.substring(c+3));c=a.indexOf("/");0<=c&&(a=a.substring(0,c))}var b={pu:a,"if":b,rn:new Number(Math.floor(99999999*Math.random())+1)},a=[],d;for(d in b)a.push(d+"="+encodeURIComponent(b[d]));return encodeURIComponent(a.join("&"))};
+            document.write('<S' + 'CRIPT TYPE="text/javascript" SRC="//cpm.ezmob.com/tag?zone_id=351928&size=728x90&subid=&j=' + __jscp() + '"></S' + 'CRIPT>');
+        </SCRIPT>
+    </div>
+
     <!-- Footer -->
     <footer class="footer footer-container watch-footer">
         <p>&copy; 2026 HEARTBEAT Premium. All rights reserved.</p>
     </footer>
 
     <!-- Scripts -->
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
     <script>
         // Specific logic for Watch Page
