@@ -10,6 +10,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css">
+    <!-- Admin-specific overrides -->
+    <style>
+        /* Always show icon + text in admin navbar regardless of viewport */
+        #admin-navbar .btn-text { display: inline !important; }
+        #admin-navbar .btn-icon { display: inline-flex !important; font-size: 1rem !important; }
+        #admin-navbar .nav-right .btn-secondary {
+            aspect-ratio: auto !important;
+            border-radius: 10px !important;
+            padding: 0.6rem 1rem !important;
+        }
+    </style>
+
     <!-- Auth Check -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
     <script src="supabase-config.js"></script>
@@ -29,21 +41,21 @@
 <body class="admin-body">
 
     <!-- Navigation Bar -->
-    <nav class="navbar scrolled">
+    <nav class="navbar scrolled" id="admin-navbar">
         <div class="nav-container">
             <div class="nav-left">
-                <a href="index.html" class="logo">
+                <a href="index.html" class="logo" id="admin-logo">
                     HEART<span class="heart-pulse">❤️</span>BEAT <span class="admin-badge-text">ADMIN</span>
                 </a>
             </div>
-            <div class="nav-right">
-                <button onclick="auth.logout()" class="btn btn-secondary logout-link">
-                    <span class="btn-icon">🚪</span>
-                    <span class="btn-text">Logout</span>
+            <div class="nav-right" style="gap: 0.6rem;">
+                <button onclick="auth.logout()" class="btn btn-secondary logout-link" style="white-space:nowrap;">
+                    <span class="btn-icon" style="font-size:1rem;">🚪</span>
+                    <span class="btn-text" style="display:inline;">Logout</span>
                 </button>
-                <a href="index.html" class="btn btn-secondary">
-                    <span class="btn-icon">🏠</span>
-                    <span class="btn-text">← Back to Website</span>
+                <a href="index.html" class="btn btn-secondary" style="white-space:nowrap;">
+                    <span class="btn-icon" style="font-size:1rem;">🏠</span>
+                    <span class="btn-text" style="display:inline;">Back to Site</span>
                 </a>
             </div>
         </div>

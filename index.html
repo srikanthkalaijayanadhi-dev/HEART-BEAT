@@ -21,11 +21,11 @@
                 <a href="index.html" class="logo" id="main-logo">
                     HEART<span class="heart-pulse">❤️</span>BEAT
                 </a>
-                <ul class="nav-links">
-                    <li><a href="#" class="active">Home</a></li>
-                    <li><a href="#">Movies</a></li>
-                    <li><a href="#">Series</a></li>
-                    <li><a href="#">Trending</a></li>
+                <ul class="nav-links" id="desktop-nav-links">
+                    <li><a href="#" class="active" id="dnav-home" data-filter="all">Home</a></li>
+                    <li><a href="#" id="dnav-movies" data-filter="Movie">Movies</a></li>
+                    <li><a href="#" id="dnav-series" data-filter="Series">Series</a></li>
+                    <li><a href="#" id="dnav-trending" data-filter="Trending">Trending</a></li>
                 </ul>
             </div>
             <div class="nav-right">
@@ -109,52 +109,59 @@
     <script src="supabase-config.js"></script>
     <script src="script.js"></script>
     <script>
-        // Mobile bottom nav – fully connected to content panel
-        const navItems = document.querySelectorAll('.mobile-nav-item');
+        // ── Shared filter engine ───────────────────────────────────────────
         const heroBanner = document.getElementById('hero-banner');
-
+        const navItems = document.querySelectorAll('.mobile-nav-item');
         const filterMap = {
             'mob-home':     'all',
             'mob-movies':   'Movie',
             'mob-series':   'Series',
             'mob-trending': 'Trending',
-            'mob-admin':    null   // navigates away, no filter
+            'mob-admin':    null
         };
+        const mobMap = { all: 'mob-home', Movie: 'mob-movies', Series: 'mob-series', Trending: 'mob-trending' };
+        const deskMap = { all: 'dnav-home', Movie: 'dnav-movies', Series: 'dnav-series', Trending: 'dnav-trending' };
 
+        function applyFilter(filter) {
+            // Sync mobile active
+            navItems.forEach(el => el.classList.remove('active'));
+            const mobEl = document.getElementById(mobMap[filter]);
+            if (mobEl) mobEl.classList.add('active');
+            // Sync desktop active
+            document.querySelectorAll('#desktop-nav-links a').forEach(el => el.classList.remove('active'));
+            const dEl = document.getElementById(deskMap[filter]);
+            if (dEl) dEl.classList.add('active');
+
+            function doRender() {
+                if (!window.app) { setTimeout(doRender, 100); return; }
+                if (heroBanner) heroBanner.style.display = filter === 'all' ? '' : 'none';
+                window.app.renderAll(filter);
+                if (filter !== 'all') {
+                    const contentEl = document.getElementById('content-container');
+                    if (contentEl) contentEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+            doRender();
+        }
+
+        // ── Mobile bottom nav ─────────────────────────────────────────────
         navItems.forEach(function(item) {
             item.addEventListener('click', function(e) {
                 const filter = filterMap[this.id];
-
-                // Admin tab navigates to login page – let it work normally
-                if (filter === null) return;
-
+                if (filter === null) return; // admin link — let href work normally
                 e.preventDefault();
+                applyFilter(filter);
+            });
+        });
 
-                // Update active state
-                navItems.forEach(el => el.classList.remove('active'));
-                this.classList.add('active');
-
-                // Wait for app to be ready
-                function doRender() {
-                    if (!window.app) { setTimeout(doRender, 100); return; }
-
-                    // Show / hide hero
-                    if (heroBanner) {
-                        heroBanner.style.display = filter === 'all' ? '' : 'none';
-                    }
-
-                    // Render content with filter
-                    window.app.renderAll(filter);
-
-                    // Scroll to content smoothly
-                    const contentEl = document.getElementById('content-container');
-                    if (contentEl) {
-                        contentEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }
-                doRender();
+        // ── Desktop nav links ─────────────────────────────────────────────
+        document.querySelectorAll('#desktop-nav-links a').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                applyFilter(this.dataset.filter || 'all');
             });
         });
     </script>
 </body>
 </html>
+

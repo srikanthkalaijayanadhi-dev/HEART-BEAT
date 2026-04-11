@@ -168,44 +168,104 @@ class StreamVault {
         }
         // 'all' keeps original order (newest first from Supabase)
 
+        // ── Page header for filtered views ────────────────────────────
+        if (filter !== 'all') {
+            const hdrMap = {
+                Movie:    { icon: '🎬', title: 'Movies',    sub: 'All movies in the HEARTBEAT library' },
+                Series:   { icon: '📺', title: 'Series',    sub: 'Binge-worthy series, season by season' },
+                Trending: { icon: '🔥', title: 'Trending',  sub: 'What everyone is watching right now' }
+            };
+            const h = hdrMap[filter] || { icon: '📁', title: filter, sub: '' };
+            const hdr = document.createElement('div');
+            hdr.className = 'page-filter-header';
+            hdr.innerHTML = `
+                <h1><span class="page-icon">${h.icon}</span>${h.title}</h1>
+                <p>${h.sub}</p>
+            `;
+            container.appendChild(hdr);
+
+            // Stats bar
+            if (items.length > 0) {
+                const stats = document.createElement('div');
+                stats.className = 'content-stats';
+                stats.innerHTML = `<span>Showing</span> <strong>${items.length}</strong> <span>title${items.length !== 1 ? 's' : ''}</span>`;
+                container.appendChild(stats);
+            }
+        }
+
         if (items.length === 0) {
-            const filterLabel = filter === 'all' ? '' : ` in ${filter}`;
-            container.innerHTML = `
-                <div style="text-align:center; padding: 5rem 2rem; color:#aaa;">
-                    <div style="font-size:3rem; margin-bottom:1rem;">🎬</div>
-                    <h2 style="color:#fff; margin-bottom:0.5rem;">No Content Yet${filterLabel}</h2>
-                    <p>Go to the <a href="admin.html" style="color:#e50914;">Admin Panel</a> to publish your first movie or series.</p>
-                </div>`;
+            const filterLabel = filter === 'all' ? 'content' : filter === 'Movie' ? 'movies' : filter === 'Series' ? 'series' : 'trending titles';
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-state';
+            emptyDiv.innerHTML = `
+                <span class="empty-icon">🎬</span>
+                <h2>No ${filterLabel} yet</h2>
+                <p>Visit the <a href="admin.html">Admin Panel</a> to publish your first title.</p>
+            `;
+            container.appendChild(emptyDiv);
             if (filter === 'all') this.updateHero();
             return;
         }
 
         if (filter === 'Trending') {
-            // Trending shows as a single flat row
-            const row = document.createElement('section');
-            row.className = 'content-row';
-            row.innerHTML = `
-                <div class="row-header">
-                    <h2 class="row-title">🔥 Trending Now</h2>
-                </div>
-                <div class="row-cards">
-                    ${items.map(item => `
-                        <article class="card" data-id="${item.id}">
-                            <img class="card-thumb" src="${item.thumbPortrait}" alt="${item.title}" loading="lazy">
-                            <div class="card-overlay"><span class="play-icon">▶</span></div>
-                            <div class="card-info">
-                                <h3 class="card-title">${item.title}</h3>
-                                <div class="card-meta">
-                                    <span>${item.type}</span>
-                                    <span>${item.publishDate ? new Date(item.publishDate).getFullYear() : ''}</span>
+            // Trending shows as a single flat row with rank badges
+            const wrap = document.createElement('div');
+            wrap.style.padding = '1.5rem 4% 3rem';
+            const grid = document.createElement('div');
+            grid.className = 'row-cards';
+            grid.innerHTML = items.map((item, idx) => `
+                <article class="card" data-id="${item.id}">
+                    <img class="card-thumb" src="${item.thumbPortrait}" alt="${item.title}" loading="lazy">
+                    <span class="card-rank">#${idx + 1}</span>
+                    <span class="card-type-badge">${item.type}</span>
+                    <div class="card-overlay"><span class="play-icon">▶</span></div>
+                    <div class="card-info">
+                        <h3 class="card-title">${item.title}</h3>
+                        <div class="card-meta">
+                            <span>${item.type}</span>
+                            <span>${item.publishDate ? new Date(item.publishDate).getFullYear() : ''}</span>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+            wrap.appendChild(grid);
+            container.appendChild(wrap);
+        } else if (filter === 'Movie' || filter === 'Series') {
+            // Single-type filtered view – group by category
+            const categories = [...new Set(items.map(item => item.category))];
+            const wrap = document.createElement('div');
+            wrap.style.padding = '1.5rem 0 3rem';
+            categories.forEach(cat => {
+                const catItems = items.filter(item => item.category === cat);
+                if (catItems.length === 0) return;
+
+                const row = document.createElement('section');
+                row.className = 'content-row';
+                row.innerHTML = `
+                    <div class="row-header" style="padding: 0 4%;">
+                        <h2 class="row-title">${cat}</h2>
+                    </div>
+                    <div class="row-cards" style="padding: 0 4%;">
+                        ${catItems.map(item => `
+                            <article class="card" data-id="${item.id}">
+                                <img class="card-thumb" src="${item.thumbPortrait}" alt="${item.title}" loading="lazy">
+                                <span class="card-type-badge">${item.type === 'Series' ? 'SERIES' : 'HD'}</span>
+                                <div class="card-overlay"><span class="play-icon">▶</span></div>
+                                <div class="card-info">
+                                    <h3 class="card-title">${item.title}</h3>
+                                    <div class="card-meta">
+                                        <span>${item.type}</span>
+                                        <span>${item.publishDate ? new Date(item.publishDate).getFullYear() : ''}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        </article>
-                    `).join('')}
-                </div>`;
-            container.appendChild(row);
+                            </article>
+                        `).join('')}
+                    </div>`;
+                wrap.appendChild(row);
+            });
+            container.appendChild(wrap);
         } else {
-            // Group by category
+            // 'all' – Group by category (home page)
             const categories = [...new Set(items.map(item => item.category))];
             categories.forEach(cat => {
                 const catItems = items.filter(item => item.category === cat);
@@ -221,6 +281,7 @@ class StreamVault {
                         ${catItems.map(item => `
                             <article class="card" data-id="${item.id}">
                                 <img class="card-thumb" src="${item.thumbPortrait}" alt="${item.title}" loading="lazy">
+                                <span class="card-type-badge">${item.type === 'Series' ? 'SERIES' : 'HD'}</span>
                                 <div class="card-overlay"><span class="play-icon">▶</span></div>
                                 <div class="card-info">
                                     <h3 class="card-title">${item.title}</h3>

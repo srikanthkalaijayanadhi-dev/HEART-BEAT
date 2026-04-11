@@ -220,8 +220,11 @@ body {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
+/* btn-icon is hidden by default on desktop but shown on mobile via media query */
 .btn-icon {
-    display: none;
+    display: inline-flex;
+    font-size: 1.1rem;
+    line-height: 1;
 }
 
 /* Content Rows */
@@ -245,12 +248,26 @@ body {
 
 .row-title {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.row-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 1.1em;
+    background: var(--primary);
+    border-radius: 4px;
+    flex-shrink: 0;
 }
 
 .row-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
     gap: 1.5rem;
 }
 
@@ -262,14 +279,16 @@ body {
     aspect-ratio: 2/3; /* Portrait */
     background-color: var(--surface);
     cursor: pointer;
-    transition: var(--transition);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(255,255,255,0.04);
 }
 
 .card:hover {
-    transform: scale(1.05);
+    transform: scale(1.06) translateY(-4px);
     z-index: 30;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 24px 48px rgba(0,0,0,0.55), 0 0 0 2px rgba(229,9,20,0.4);
+    border-color: rgba(229,9,20,0.3);
 }
 
 .card-thumb {
@@ -812,11 +831,12 @@ body {
 
     /* Navbar Button Optimization - Only for Nav buttons */
     .nav-right .btn-secondary {
-        padding: 0.6rem;
-        aspect-ratio: 1/1;
+        padding: 0.55rem 0.7rem;
+        aspect-ratio: auto;
         justify-content: center;
-        border-radius: 50%;
-        width: auto !important; /* Prevent giant circles */
+        border-radius: 12px;
+        gap: 0.35rem;
+        width: auto !important;
     }
 
     .btn-text {
@@ -824,8 +844,9 @@ body {
     }
 
     .btn-icon {
-        display: inline-block;
-        font-size: 1.2rem;
+        display: inline-flex;
+        font-size: 1.15rem;
+        line-height: 1;
     }
 
     /* Restore normal buttons for HERO and WATCH actions */
@@ -1259,4 +1280,190 @@ body {
     }
 }
 
+/* =============================================
+   PAGE FILTER HEADERS (Movies / Series / Trending)
+   ============================================= */
 
+.page-filter-header {
+    padding: 7rem 4% 2rem;
+    background: linear-gradient(to bottom, rgba(229,9,20,0.08) 0%, transparent 100%);
+    border-bottom: 1px solid var(--glass-border);
+    margin-bottom: 0;
+}
+
+.page-filter-header h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    letter-spacing: -0.5px;
+}
+
+.page-filter-header h1 .page-icon {
+    font-size: 2.2rem;
+    filter: drop-shadow(0 0 8px rgba(229,9,20,0.6));
+}
+
+.page-filter-header p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
+
+.filter-pills {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.filter-pill {
+    padding: 0.45rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--glass-border);
+    background: var(--glass);
+    color: var(--text-muted);
+    transition: var(--transition);
+    letter-spacing: 0.3px;
+}
+
+.filter-pill:hover {
+    background: rgba(255,255,255,0.12);
+    color: var(--text);
+}
+
+.filter-pill.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(229,9,20,0.4);
+}
+
+/* Stats bar */
+.content-stats {
+    padding: 0.75rem 4%;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.content-stats strong {
+    color: var(--text);
+}
+
+/* Improved empty state */
+.empty-state {
+    text-align: center;
+    padding: 6rem 2rem;
+    color: var(--text-muted);
+}
+
+.empty-state .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1.2rem;
+    display: block;
+    filter: grayscale(0.3);
+}
+
+.empty-state h2 {
+    font-size: 1.6rem;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+}
+
+.empty-state p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.empty-state a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.empty-state a:hover {
+    text-decoration: underline;
+}
+
+/* Trending – rank badges on cards */
+.card-rank {
+    position: absolute;
+    top: 0.6rem;
+    left: 0.6rem;
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.25rem 0.55rem;
+    border-radius: 6px;
+    z-index: 10;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(229,9,20,0.5);
+}
+
+/* Type badge on card */
+.card-type-badge {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    color: var(--accent);
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    z-index: 10;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border: 1px solid rgba(0,210,255,0.2);
+}
+
+/* =============================================
+   ADMIN PANEL IMPROVEMENTS
+   ============================================= */
+
+/* Better navbar style on admin */
+.admin-body .navbar {
+    background: var(--background);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.admin-body .nav-right {
+    gap: 0.75rem;
+}
+
+.admin-body .btn-secondary .btn-icon {
+    font-size: 1rem;
+}
+
+/* Active mobile nav glow */
+@media (max-width: 768px) {
+    .admin-body .mobile-bottom-nav {
+        display: none !important; /* Admin has its own nav */
+    }
+
+    .page-filter-header {
+        padding: 5.5rem 4% 1.5rem;
+    }
+
+    .page-filter-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .filter-pills {
+        gap: 0.5rem;
+    }
+
+    .filter-pill {
+        padding: 0.4rem 0.9rem;
+        font-size: 0.78rem;
+    }
+}
