@@ -1,0 +1,27 @@
+{
+  "name": "primary",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "build": "esbuild speed-insights.js --bundle --format=iife --outfile=speed-insights.bundle.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srikanthkalaijayanadhi-dev/HEART-BEAT.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/srikanthkalaijayanadhi-dev/HEART-BEAT/issues"
+  },
+  "homepage": "https://github.com/srikanthkalaijayanadhi-dev/HEART-BEAT#readme",
+  "dependencies": {
+    "@vercel/speed-insights": "^2.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}
