@@ -11,14 +11,19 @@
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css">
     <!-- Auth Check -->
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+    <script src="supabase-config.js"></script>
     <script src="script.js"></script>
     <script>
         // Critical: Check auth before rendering the rest of the page
-        if (!auth.isLoggedIn()) {
-            window.location.href = 'login.html';
-        }
+        // We wait for the 'auth.ready' promise to avoid race conditions
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.ready.then((session) => {
+                if (!session) {
+                    window.location.href = 'login.html';
+                }
+            });
+        });
     </script>
 </head>
 <body class="admin-body">
@@ -148,10 +153,6 @@
         </div>
     </main>
 
-    </main>
-
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // Set default date to today
         document.getElementById('publishDate').valueAsDate = new Date();

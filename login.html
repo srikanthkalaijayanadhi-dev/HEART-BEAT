@@ -38,27 +38,50 @@
     </div>
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+    <script src="supabase-config.js"></script>
     <script src="script.js"></script>
     <script>
-        // Redirect if already logged in
-        if (auth.isLoggedIn()) {
-            window.location.href = 'admin.html';
-        }
+        // Redirect if already logged in - wait for Supabase session to initialize
+        auth.ready.then(session => {
+            if (session) {
+                window.location.href = 'admin.html';
+            }
+        });
 
         const loginForm = document.getElementById('login-form');
         const errorMsg = document.getElementById('error-msg');
+        const loginBtn = loginForm.querySelector('button[type="submit"]');
 
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
+
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
-            if (auth.login(email, password)) {
-                window.location.href = 'admin.html';
-            } else {
+            // Show loading state
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span>⏳</span> Signing in...';
+            errorMsg.style.display = 'none';
+
+            try {
+                const result = await auth.login(email, password);
+                if (result.success) {
+                    loginBtn.innerHTML = '<span>✅</span> Success! Redirecting...';
+                    window.location.href = 'admin.html';
+                } else {
+                    errorMsg.textContent = '❌ ' + result.message;
+                    errorMsg.style.display = 'block';
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<span>🔒</span> Login to Dashboard';
+                    document.getElementById('password').value = '';
+                }
+            } catch (err) {
+                console.error('Login exception:', err);
+                errorMsg.textContent = '❌ Exception: ' + err.message;
                 errorMsg.style.display = 'block';
-                // Reset form slightly for security feel
-                document.getElementById('password').value = '';
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<span>🔒</span> Login to Dashboard';
             }
         });
     </script>

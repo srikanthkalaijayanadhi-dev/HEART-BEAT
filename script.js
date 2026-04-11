@@ -1,12 +1,7 @@
 /**
- * HEARTBEAT Core Logic
+ * HEARTBEAT Core Logic - Supabase Edition
  * Handles dynamic content rendering, persistence, and cinematic redirection.
  */
-
-// Supabase Configuration
-const SB_URL = 'https://iynkabsrmxszglezxozr.supabase.co';
-const SB_KEY = 'sb_publishable_Q2BkE5FKQ2SR3hKpKH2zgA_7bJVoG98';
-const supabase = (window.supabase) ? window.supabase.createClient(SB_URL, SB_KEY) : null;
 
 class StreamVault {
     constructor() {
@@ -17,75 +12,125 @@ class StreamVault {
     }
 
     async init() {
+        // Show loading state immediately
+        const container = document.getElementById('content-container');
+        if (container) {
+            container.innerHTML = `
+                <div style="text-align:center; padding: 4rem 2rem; color: #aaa;">
+                    <div style="font-size:2rem; margin-bottom:1rem;">⏳</div>
+                    <p>Loading content...</p>
+                </div>`;
+        }
         await this.loadContent();
         this.setupEventListeners();
+        this.renderAll();
     }
 
     // Load content from Supabase
     async loadContent() {
-        if (!supabase) {
-            console.warn('Supabase not initialized. Using local defaults.');
-            this.content = [];
-            this.renderAll();
-            return;
-        }
-
+        console.log('[HEARTBEAT] Fetching content from Supabase...');
         const { data, error } = await supabase
             .from('content')
             .select('*')
             .order('created_at', { ascending: false });
 
         if (error) {
-            console.error('Error loading content:', error);
+            console.error('[HEARTBEAT] Error loading content:', error.message);
+            // Show error on home page
+            const container = document.getElementById('content-container');
+            if (container) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding: 4rem 2rem; color:#e57373;">
+                        <div style="font-size:2rem; margin-bottom:1rem;">⚠️</div>
+                        <p><strong>Could not load content.</strong></p>
+                        <p style="font-size:0.85rem; color:#aaa; margin-top:0.5rem;">${error.message}</p>
+                    </div>`;
+            }
             return;
         }
 
-        this.content = data || [];
+        console.log('[HEARTBEAT] Loaded', data.length, 'items from Supabase.');
+
+        // Map snake_case from DB back to camelCase for JS
+        this.content = data.map(item => ({
+            id: item.id,
+            title: item.title,
+            type: item.type,
+            thumbPortrait: item.thumb_portrait,
+            thumbLandscape: item.thumb_landscape,
+            category: item.category,
+            desc: item.description,
+            publishDate: item.publish_date,
+            featured: item.featured,
+            videoLink: item.video_link,
+            episodes: item.episodes || []
+        }));
+
         this.renderAll();
         if (document.getElementById('admin-content-list')) {
             this.renderAdminList();
         }
     }
 
-    // Save or Update content in Supabase
+    // Save or Update content
     async saveContent(newItem) {
-        if (!supabase) return;
+        const dbItem = {
+            title: newItem.title,
+            type: newItem.type,
+            thumb_portrait: newItem.thumbPortrait,
+            thumb_landscape: newItem.thumbLandscape,
+            category: newItem.category,
+            description: newItem.desc,
+            publish_date: newItem.publishDate,
+            featured: newItem.featured,
+            video_link: newItem.videoLink,
+            episodes: newItem.episodes
+        };
 
-        // If featured is true, we should ideally unset other featured items,
-        // but for simplicity and RLS, we'll handle the 'featured' logic in the UI/Query
-        // or just let it overwrite.
-        if (newItem.featured) {
-            // Optional: You could add logic here to unset 'featured' on other items via an RPC or multiple calls
+        if (this.editMode && this.currentEditId) {
+            // Update mode
+            const { error } = await supabase
+                .from('content')
+                .update(dbItem)
+                .eq('id', this.currentEditId);
+            
+            if (error) {
+                alert('Error updating: ' + error.message);
+                return;
+            }
+            this.exitEditMode();
+        } else {
+            // Create mode
+            // If featured, we might want to unfeature others (optional, Supabase can do this with a trigger or manual call)
+            if (newItem.featured) {
+                await supabase.from('content').update({ featured: false }).neq('id', '00000000-0000-0000-0000-000000000000');
+            }
+
+            const { error } = await supabase
+                .from('content')
+                .insert([dbItem]);
+
+            if (error) {
+                alert('Error publishing: ' + error.message);
+                return;
+            }
         }
-
-        const { error } = await supabase
-            .from('content')
-            .upsert(newItem, { onConflict: 'id' });
-
-        if (error) {
-            console.error('Error saving content:', error);
-            alert('Failed to save content: ' + error.message);
-            return;
-        }
-
+        
         await this.loadContent();
+        alert(this.editMode ? 'Content Updated!' : 'Content Published!');
     }
 
-    // Delete content from Supabase
+    // Delete content
     async deleteContent(id) {
-        if (!supabase) return;
-
         const { error } = await supabase
             .from('content')
             .delete()
             .eq('id', id);
 
         if (error) {
-            console.error('Error deleting content:', error);
-            alert('Failed to delete content.');
+            alert('Error deleting: ' + error.message);
             return;
         }
-
         await this.loadContent();
     }
 
@@ -96,24 +141,12 @@ class StreamVault {
 
         const newItem = {
             ...item,
-            id: 'user-' + Date.now(),
             title: item.title + ' (Copy)',
-            featured: false,
-            created_at: new Date().toISOString()
+            featured: false
         };
+        delete newItem.id; // Let DB generate new UUID
 
-        const { error } = await supabase
-            .from('content')
-            .insert(newItem);
-
-        if (error) {
-            console.error('Error duplicating:', error);
-            alert('Failed to duplicate.');
-            return;
-        }
-
-        await this.loadContent();
-        alert('Content Duplicated!');
+        await this.saveContent(newItem);
     }
 
     // Rendering Logic
@@ -122,6 +155,18 @@ class StreamVault {
         if (!container) return; // Not on home page
 
         container.innerHTML = '';
+
+        if (this.content.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; padding: 5rem 2rem; color:#aaa;">
+                    <div style="font-size:3rem; margin-bottom:1rem;">🎬</div>
+                    <h2 style="color:#fff; margin-bottom:0.5rem;">No Content Yet</h2>
+                    <p>Go to the <a href="admin.html" style="color:#e50914;">Admin Panel</a> to publish your first movie or series.</p>
+                </div>`;
+            this.updateHero();
+            return;
+        }
+
         const categories = [...new Set(this.content.map(item => item.category))];
         
         categories.forEach(cat => {
@@ -145,7 +190,7 @@ class StreamVault {
                                 <h3 class="card-title">${item.title}</h3>
                                 <div class="card-meta">
                                     <span>HD</span>
-                                    <span>${new Date(item.publishDate).getFullYear()}</span>
+                                    <span>${item.publishDate ? new Date(item.publishDate).getFullYear() : ''}</span>
                                 </div>
                             </div>
                         </article>
@@ -160,7 +205,7 @@ class StreamVault {
     }
 
     updateHero() {
-        const featured = this.content.find(item => item.featured) || (this.content.length > 0 ? this.content[this.content.length - 1] : null);
+        const featured = this.content.find(item => item.featured) || (this.content.length > 0 ? this.content[0] : null);
         const hero = document.getElementById('hero-banner');
         if (hero) {
             if (featured) {
@@ -223,7 +268,6 @@ class StreamVault {
                 }
 
                 const newItem = {
-                    id: this.currentEditId || 'user-' + Date.now(),
                     title: document.getElementById('title').value,
                     type: document.getElementById('contentType').value,
                     thumbPortrait: document.getElementById('thumbPortrait').value,
@@ -233,21 +277,16 @@ class StreamVault {
                     publishDate: document.getElementById('publishDate').value || new Date().toISOString().split('T')[0],
                     featured: document.getElementById('is-featured').checked,
                     videoLink: document.getElementById('videoLink').value,
-                    episodes: episodes,
-                    created_at: new Date().toISOString()
+                    episodes: episodes
                 };
-
-                const wasEdit = this.editMode;
-                await this.saveContent(newItem);
                 
+                await this.saveContent(newItem);
                 adminForm.reset();
                 document.getElementById('publishDate').valueAsDate = new Date();
                 this.exitEditMode(); 
-                alert(wasEdit ? 'Content Updated!' : 'Content Published!');
             });
 
             document.getElementById('cancel-edit-btn').addEventListener('click', () => this.exitEditMode());
-            this.renderAdminList();
         }
     }
 
@@ -260,13 +299,12 @@ class StreamVault {
         const listContainer = document.getElementById('admin-content-list');
         if (!listContainer) return;
 
-        const stored = JSON.parse(localStorage.getItem('streamvault_content') || '[]');
-        if (stored.length === 0) {
+        if (this.content.length === 0) {
             listContainer.innerHTML = '<p class="loading-status">No content added yet.</p>';
             return;
         }
 
-        listContainer.innerHTML = stored.map(item => `
+        listContainer.innerHTML = this.content.map(item => `
             <div class="list-item">
                 <img src="${item.thumbPortrait}" alt="${item.title}">
                 <div class="list-item-info">
@@ -311,7 +349,7 @@ class StreamVault {
         this.toggleStreamTypeFields();
 
         // UI Updates
-        document.getElementById('edit-mode-tag').style.display = 'inline-block';
+        document.getElementById('edit-mode-tag').classList.remove('hidden-initial');
         document.getElementById('submit-btn').innerHTML = '💾 Save Changes';
         document.getElementById('cancel-edit-btn').style.display = 'block';
         
@@ -328,16 +366,15 @@ class StreamVault {
             this.toggleStreamTypeFields();
         }
         
-        document.getElementById('edit-mode-tag').style.display = 'none';
+        document.getElementById('edit-mode-tag').classList.add('hidden-initial');
         document.getElementById('submit-btn').innerHTML = '🚀 Publish to Website';
         document.getElementById('cancel-edit-btn').style.display = 'none';
         document.getElementById('publishDate').valueAsDate = new Date();
     }
 
-    deleteItem(id) {
+    async deleteItem(id) {
         if (confirm('Delete this content?')) {
-            this.deleteContent(id);
-            this.renderAdminList();
+            await this.deleteContent(id);
         }
     }
 
@@ -371,33 +408,47 @@ class StreamVault {
 
 class Auth {
     constructor() {
-        this.adminEmail = 'heartbeatsseason3@gmail.com';
-        this.adminPass = 'Tamilpriyan';
-        this.sessionKey = 'heartbeat_auth_session';
+        this.session = null;
+        this.ready = this.init();
     }
 
-    login(email, password) {
-        if (email === this.adminEmail && password === this.adminPass) {
-            const token = btoa(email + Date.now()); // Simple mock token
-            localStorage.setItem(this.sessionKey, token);
-            return true;
+    async init() {
+        const { data: { session } } = await supabase.auth.getSession();
+        this.session = session;
+
+        // Listen for changes
+        supabase.auth.onAuthStateChange((_event, session) => {
+            this.session = session;
+        });
+
+        return this.session;
+    }
+
+    async login(email, password) {
+        if (!supabase) {
+            return { success: false, message: 'Supabase client not initialized. Check console for details.' };
         }
-        return false;
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
+
+        if (error) {
+            console.error('Login error:', error.message);
+            return { success: false, message: error.message };
+        }
+
+        this.session = data.session;
+        return { success: true, message: 'OK' };
     }
 
-    logout() {
-        localStorage.removeItem(this.sessionKey);
+    async logout() {
+        await supabase.auth.signOut();
         window.location.href = 'index.html';
     }
 
     isLoggedIn() {
-        return localStorage.getItem(this.sessionKey) !== null;
-    }
-
-    checkAuthRedirect() {
-        if (!this.isLoggedIn()) {
-            window.location.href = 'login.html';
-        }
+        return this.session !== null;
     }
 }
 
@@ -406,3 +457,4 @@ window.auth = new Auth();
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new StreamVault();
 });
+
