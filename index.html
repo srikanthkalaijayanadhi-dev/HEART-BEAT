@@ -73,9 +73,88 @@
         </div>
     </footer>
 
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+        <div class="mobile-nav-logo">
+            <a href="index.html" class="logo" id="mobile-logo">
+                HEART<span class="heart-pulse">❤️</span>BEAT
+            </a>
+        </div>
+        <div class="mobile-nav-links">
+            <a href="#" class="mobile-nav-item active" id="mob-home">
+                <span class="mob-icon">🏠</span>
+                <span class="mob-label">Home</span>
+            </a>
+            <a href="#" class="mobile-nav-item" id="mob-movies">
+                <span class="mob-icon">🎬</span>
+                <span class="mob-label">Movies</span>
+            </a>
+            <a href="#" class="mobile-nav-item" id="mob-series">
+                <span class="mob-icon">📺</span>
+                <span class="mob-label">Series</span>
+            </a>
+            <a href="#" class="mobile-nav-item" id="mob-trending">
+                <span class="mob-icon">🔥</span>
+                <span class="mob-label">Trending</span>
+            </a>
+            <a href="login.html" class="mobile-nav-item" id="mob-admin">
+                <span class="mob-icon">⚙️</span>
+                <span class="mob-label">Admin</span>
+            </a>
+        </div>
+    </nav>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
     <script src="supabase-config.js"></script>
     <script src="script.js"></script>
+    <script>
+        // Mobile bottom nav – fully connected to content panel
+        const navItems = document.querySelectorAll('.mobile-nav-item');
+        const heroBanner = document.getElementById('hero-banner');
+
+        const filterMap = {
+            'mob-home':     'all',
+            'mob-movies':   'Movie',
+            'mob-series':   'Series',
+            'mob-trending': 'Trending',
+            'mob-admin':    null   // navigates away, no filter
+        };
+
+        navItems.forEach(function(item) {
+            item.addEventListener('click', function(e) {
+                const filter = filterMap[this.id];
+
+                // Admin tab navigates to login page – let it work normally
+                if (filter === null) return;
+
+                e.preventDefault();
+
+                // Update active state
+                navItems.forEach(el => el.classList.remove('active'));
+                this.classList.add('active');
+
+                // Wait for app to be ready
+                function doRender() {
+                    if (!window.app) { setTimeout(doRender, 100); return; }
+
+                    // Show / hide hero
+                    if (heroBanner) {
+                        heroBanner.style.display = filter === 'all' ? '' : 'none';
+                    }
+
+                    // Render content with filter
+                    window.app.renderAll(filter);
+
+                    // Scroll to content smoothly
+                    const contentEl = document.getElementById('content-container');
+                    if (contentEl) {
+                        contentEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+                doRender();
+            });
+        });
+    </script>
 </body>
 </html>

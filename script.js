@@ -149,59 +149,95 @@ class StreamVault {
         await this.saveContent(newItem);
     }
 
-    // Rendering Logic
-    renderAll() {
+    // Rendering Logic - accepts optional filter: 'all' | 'Movie' | 'Series' | 'Trending'
+    renderAll(filter = 'all') {
         const container = document.getElementById('content-container');
-        if (!container) return; // Not on home page
+        if (!container) return;
 
         container.innerHTML = '';
 
-        if (this.content.length === 0) {
+        // Determine which items to show
+        let items = this.content;
+        if (filter === 'Movie') {
+            items = this.content.filter(i => i.type === 'Movie');
+        } else if (filter === 'Series') {
+            items = this.content.filter(i => i.type === 'Series');
+        } else if (filter === 'Trending') {
+            // Trending = sorted by publish date descending (most recent first)
+            items = [...this.content].sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
+        }
+        // 'all' keeps original order (newest first from Supabase)
+
+        if (items.length === 0) {
+            const filterLabel = filter === 'all' ? '' : ` in ${filter}`;
             container.innerHTML = `
                 <div style="text-align:center; padding: 5rem 2rem; color:#aaa;">
                     <div style="font-size:3rem; margin-bottom:1rem;">🎬</div>
-                    <h2 style="color:#fff; margin-bottom:0.5rem;">No Content Yet</h2>
+                    <h2 style="color:#fff; margin-bottom:0.5rem;">No Content Yet${filterLabel}</h2>
                     <p>Go to the <a href="admin.html" style="color:#e50914;">Admin Panel</a> to publish your first movie or series.</p>
                 </div>`;
-            this.updateHero();
+            if (filter === 'all') this.updateHero();
             return;
         }
 
-        const categories = [...new Set(this.content.map(item => item.category))];
-        
-        categories.forEach(cat => {
+        if (filter === 'Trending') {
+            // Trending shows as a single flat row
             const row = document.createElement('section');
             row.className = 'content-row';
-            const items = this.content.filter(item => item.category === cat);
-            if (items.length === 0) return;
-            
             row.innerHTML = `
                 <div class="row-header">
-                    <h2 class="row-title">${cat}</h2>
+                    <h2 class="row-title">🔥 Trending Now</h2>
                 </div>
                 <div class="row-cards">
                     ${items.map(item => `
                         <article class="card" data-id="${item.id}">
                             <img class="card-thumb" src="${item.thumbPortrait}" alt="${item.title}" loading="lazy">
-                            <div class="card-overlay">
-                                <span class="play-icon">▶</span>
-                            </div>
+                            <div class="card-overlay"><span class="play-icon">▶</span></div>
                             <div class="card-info">
                                 <h3 class="card-title">${item.title}</h3>
                                 <div class="card-meta">
-                                    <span>HD</span>
+                                    <span>${item.type}</span>
                                     <span>${item.publishDate ? new Date(item.publishDate).getFullYear() : ''}</span>
                                 </div>
                             </div>
                         </article>
                     `).join('')}
-                </div>
-            `;
+                </div>`;
             container.appendChild(row);
-        });
+        } else {
+            // Group by category
+            const categories = [...new Set(items.map(item => item.category))];
+            categories.forEach(cat => {
+                const catItems = items.filter(item => item.category === cat);
+                if (catItems.length === 0) return;
 
-        // Update Hero (Featured)
-        this.updateHero();
+                const row = document.createElement('section');
+                row.className = 'content-row';
+                row.innerHTML = `
+                    <div class="row-header">
+                        <h2 class="row-title">${cat}</h2>
+                    </div>
+                    <div class="row-cards">
+                        ${catItems.map(item => `
+                            <article class="card" data-id="${item.id}">
+                                <img class="card-thumb" src="${item.thumbPortrait}" alt="${item.title}" loading="lazy">
+                                <div class="card-overlay"><span class="play-icon">▶</span></div>
+                                <div class="card-info">
+                                    <h3 class="card-title">${item.title}</h3>
+                                    <div class="card-meta">
+                                        <span>HD</span>
+                                        <span>${item.publishDate ? new Date(item.publishDate).getFullYear() : ''}</span>
+                                    </div>
+                                </div>
+                            </article>
+                        `).join('')}
+                    </div>`;
+                container.appendChild(row);
+            });
+        }
+
+        // Only update hero when showing all content
+        if (filter === 'all') this.updateHero();
     }
 
     updateHero() {

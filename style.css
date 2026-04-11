@@ -238,6 +238,9 @@ body {
 
 .row-header {
     margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .row-title {
@@ -307,6 +310,7 @@ body {
     left: 0;
     width: 100%;
     padding: 1rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
     transition: var(--transition);
 }
 
@@ -838,10 +842,81 @@ body {
         width: 100%;
     }
 
+    /* ── Content Container ── */
     .content-container {
         margin-top: -2rem;
+        padding: 1rem 0 1rem;
     }
 
+    /* ── Content Row ── */
+    .content-row {
+        margin-bottom: 1.8rem;
+    }
+
+    .row-header {
+        padding: 0 4%;
+        margin-bottom: 0.6rem;
+    }
+
+    .row-title {
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
+
+    /* ── Netflix-style horizontal scroll cards ── */
+    .row-cards {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 0.7rem;
+        padding: 0.4rem 4% 0.8rem;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+    }
+
+    .row-cards::-webkit-scrollbar {
+        display: none; /* Hide scrollbar on mobile */
+    }
+
+    /* ── Card sizing on mobile ── */
+    .card {
+        flex: 0 0 38vw;   /* ~3 cards visible at once */
+        min-width: 110px;
+        max-width: 160px;
+        scroll-snap-align: start;
+        border-radius: 10px;
+    }
+
+    /* Card info always visible on mobile (no hover) */
+    .card-overlay {
+        opacity: 0; /* keep overlay hidden; tap to navigate */
+    }
+
+    .card-info {
+        opacity: 1 !important;
+        background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 70%, transparent 100%);
+        padding: 0.5rem 0.5rem 0.6rem;
+    }
+
+    .card-title {
+        font-size: 0.72rem;
+        font-weight: 600;
+        margin-bottom: 0.1rem;
+    }
+
+    .card-meta {
+        font-size: 0.62rem;
+    }
+
+    /* Play icon smaller on mobile */
+    .play-icon {
+        font-size: 1.8rem;
+    }
+
+    /* ── Admin list ── */
     .list-item {
         flex-direction: column;
         align-items: flex-start;
@@ -1069,4 +1144,119 @@ body {
     color: var(--primary);
     background: rgba(229, 9, 20, 0.1);
 }
+
+/* =============================================
+   MOBILE BOTTOM NAVIGATION BAR
+   ============================================= */
+
+/* Hidden on desktop by default */
+.mobile-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* Add bottom padding so content isn't hidden behind nav */
+    body {
+        padding-bottom: 90px;
+    }
+
+    /* Show the bottom nav */
+    .mobile-bottom-nav {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1100;
+        background: rgba(15, 16, 20, 0.97);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        -webkit-backdrop-filter: blur(24px);
+        backdrop-filter: blur(24px);
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6);
+        border-radius: 20px 20px 0 0;
+    }
+
+    /* Logo strip at the top of the bottom nav */
+    .mobile-nav-logo {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px 0 5px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .mobile-nav-logo .logo {
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+        gap: 0.2rem;
+        text-decoration: none;
+        color: var(--text);
+    }
+
+    .mobile-nav-logo .heart-pulse {
+        font-size: 1rem;
+    }
+
+    /* Nav links row */
+    .mobile-nav-links {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 6px 4px 12px;
+    }
+
+    /* Individual nav item */
+    .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        text-decoration: none;
+        color: var(--text-muted);
+        padding: 6px 10px;
+        border-radius: 12px;
+        transition: var(--transition);
+        position: relative;
+        min-width: 50px;
+    }
+
+    .mobile-nav-item:hover,
+    .mobile-nav-item.active {
+        color: var(--text);
+    }
+
+    .mobile-nav-item.active .mob-icon {
+        filter: drop-shadow(0 0 6px rgba(229, 9, 20, 0.9));
+        transform: translateY(-2px);
+        transition: var(--transition);
+    }
+
+    /* Active indicator pip */
+    .mobile-nav-item.active::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 22px;
+        height: 3px;
+        background: var(--primary);
+        border-radius: 0 0 4px 4px;
+    }
+
+    .mob-icon {
+        font-size: 1.4rem;
+        transition: transform 0.3s ease;
+        line-height: 1;
+    }
+
+    .mob-label {
+        font-size: 0.62rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+}
+
 
