@@ -235,6 +235,22 @@ body {
     z-index: 20;
 }
 
+.ad-placement {
+    width: 100%;
+    max-width: 1200px;
+    margin: 1.5rem auto;
+    text-align: center;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.ad-placement img {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
 .content-row {
     margin-bottom: 3rem;
 }

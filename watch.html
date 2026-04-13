@@ -38,6 +38,9 @@
     </nav>
 
     <main id="watch-content" class="container">
+        <!-- Watch Top Ad Slot -->
+        <div id="ad-watch_top" class="ad-placement"></div>
+
         <div class="watch-container">
             <div class="watch-poster">
                 <img id="watch-poster-img" src="" alt="Poster">
@@ -73,6 +76,9 @@
             </div>
         </div>
 
+        <!-- Watch Bottom Ad Slot -->
+        <div id="ad-watch_bottom" class="ad-placement"></div>
+
         <!-- Recommendations Section -->
         <section class="recommendations-section">
             <h2 class="row-title">Recommended for You</h2>
@@ -97,8 +103,11 @@
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
 
-            if (!id) {
-                document.getElementById('watch-title').textContent = 'No content ID provided.';
+            // Validate UUID format before querying Supabase
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            if (!id || id === 'undefined' || id === 'null' || !uuidRegex.test(id)) {
+                document.getElementById('watch-title').textContent = 'Invalid or missing content ID.';
+                document.getElementById('watch-desc').textContent = 'Please go back and select a valid title.';
                 return;
             }
 

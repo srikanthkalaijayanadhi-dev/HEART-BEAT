@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /login.html
+Disallow: /admin
+Disallow: /admin.html
+
+Sitemap: https://heart-beat-rust.vercel.app/sitemap.xml

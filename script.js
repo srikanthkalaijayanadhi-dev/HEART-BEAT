@@ -24,6 +24,22 @@ class StreamVault {
         await this.loadContent();
         this.setupEventListeners();
         this.renderAll();
+        this.loadGlobalAds();
+    }
+
+    // Load Ad Placements
+    async loadGlobalAds() {
+        if (!supabase) return;
+        const { data, error } = await supabase.from('ads').select('*').eq('is_active', true);
+        if (data && !error) {
+            data.forEach(ad => {
+                // Ensure the slot exists on the current page before injecting
+                const slotEl = document.getElementById(`ad-${ad.slot_id}`);
+                if (slotEl && ad.code) {
+                    slotEl.innerHTML = ad.code;
+                }
+            });
+        }
     }
 
     // Load content from Supabase
@@ -69,6 +85,8 @@ class StreamVault {
         this.renderAll();
         if (document.getElementById('admin-content-list')) {
             this.renderAdminList();
+            this.loadWithdrawals();
+            this.fetchAdminWallet();
         }
     }
 
@@ -101,9 +119,9 @@ class StreamVault {
             this.exitEditMode();
         } else {
             // Create mode
-            // If featured, we might want to unfeature others (optional, Supabase can do this with a trigger or manual call)
+            // If featured, unfeature all other items first
             if (newItem.featured) {
-                await supabase.from('content').update({ featured: false }).neq('id', '00000000-0000-0000-0000-000000000000');
+                await supabase.from('content').update({ featured: false }).eq('featured', true);
             }
 
             const { error } = await supabase
@@ -385,9 +403,40 @@ class StreamVault {
 
             document.getElementById('cancel-edit-btn').addEventListener('click', () => this.exitEditMode());
         }
+
+        // Withdrawal Form
+        const withdrawalForm = document.getElementById('withdrawal-form');
+        if (withdrawalForm) {
+            withdrawalForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const method = document.getElementById('withdrawMethod').value;
+                const amount = parseFloat(document.getElementById('withdrawAmount').value);
+                if (amount < 1200) {
+                    alert('Minimum withdrawal amount is ₹1200');
+                    return;
+                }
+
+                const withdrawalData = {
+                    amount: amount,
+                    method: method,
+                    upi_id: method === 'UPI' ? document.getElementById('upiId').value : null,
+                    bank_account: method === 'Bank Transfer' ? document.getElementById('bankAccount').value : null,
+                    ifsc_code: method === 'Bank Transfer' ? document.getElementById('ifscCode').value : null
+                };
+
+                await this.saveWithdrawal(withdrawalData);
+                withdrawalForm.reset();
+                this.togglePaymentFields(); // Reset display
+            });
+        }
     }
 
     navigateToWatch(id) {
+        if (!id || id === 'undefined' || id === 'null') {
+            console.warn('[HEARTBEAT] navigateToWatch called with invalid id:', id);
+            return;
+        }
         window.location.href = `watch.html?id=${id}`;
     }
 
@@ -415,6 +464,117 @@ class StreamVault {
                 </div>
             </div>
         `).join('');
+    }
+
+    // Withdrawal Methods
+    togglePaymentFields() {
+        const method = document.getElementById('withdrawMethod');
+        if(!method) return;
+        const upiFields = document.getElementById('upi-fields');
+        const bankFields = document.getElementById('bank-fields');
+
+        if (method.value === 'UPI') {
+            upiFields.style.display = 'block';
+            bankFields.style.display = 'none';
+        } else {
+            upiFields.style.display = 'none';
+            bankFields.style.display = 'block';
+        }
+    }
+
+    async fetchAdminWallet() {
+        const display = document.getElementById('admin-display-balance');
+        if(!display) return;
+        
+        const { data, error } = await supabase.from('wallet_balance').select('balance').eq('id', 1).single();
+        if (data) {
+            display.textContent = `₹${data.balance}`;
+            display.dataset.balance = data.balance;
+        } else {
+            console.warn("Wallet balance not found or no table setup.");
+            display.textContent = '₹0';
+            display.dataset.balance = 0;
+        }
+    }
+
+    async saveWithdrawal(data) {
+        const msgEl = document.getElementById('withdraw-msg');
+        msgEl.style.color = '#fff';
+        msgEl.textContent = 'Submitting request...';
+
+        // Check balance first
+        const display = document.getElementById('admin-display-balance');
+        if (display && display.dataset.balance) {
+            const currentBal = parseFloat(display.dataset.balance);
+            if (data.amount > currentBal) {
+                msgEl.style.color = '#e57373';
+                msgEl.textContent = 'Error: Insufficient Vault Balance!';
+                return;
+            }
+        }
+
+        const { error } = await supabase.from('withdrawals').insert([data]);
+
+        if (error) {
+            console.error('Withdrawal error:', error);
+            msgEl.style.color = '#e57373';
+            msgEl.textContent = 'Error: ' + error.message;
+            if(error.message.includes('relation "public.withdrawals" does not exist')) {
+                 msgEl.textContent = 'Error: Database table missing. Please run the SQL setup.';
+            }
+        } else {
+            // Deduct balance locally and in DB
+            if (display && display.dataset.balance) {
+                const currentBal = parseFloat(display.dataset.balance);
+                const newBal = currentBal - data.amount;
+                await supabase.from('wallet_balance').update({ balance: newBal }).eq('id', 1);
+                this.fetchAdminWallet(); // Refresh display
+            }
+
+            msgEl.style.color = '#81c784';
+            msgEl.textContent = 'Withdrawal request submitted successfully!';
+            await this.loadWithdrawals(); // refresh list
+            setTimeout(() => { msgEl.textContent = ''; }, 3000);
+        }
+    }
+
+    async loadWithdrawals() {
+        const listContainer = document.getElementById('withdrawal-history-list');
+        if (!listContainer) return;
+
+        const { data, error } = await supabase
+            .from('withdrawals')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            listContainer.innerHTML = '<p class="loading-status" style="color:#e57373;">Failed to load history.</p>';
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            listContainer.innerHTML = '<p class="loading-status">No withdrawals yet.</p>';
+            return;
+        }
+
+        listContainer.innerHTML = data.map(item => {
+            const date = new Date(item.created_at).toLocaleDateString();
+            const statusColor = item.status === 'Paid' ? '#81c784' : (item.status === 'Rejected' ? '#e57373' : '#ffd54f');
+            const details = item.method === 'UPI' ? item.upi_id : `${item.bank_account} (${item.ifsc_code})`;
+            return `
+            <div class="list-item" style="padding: 1rem;">
+                <div class="list-item-info">
+                    <h4 style="margin:0 0 0.2rem;">₹${item.amount} via ${item.method}</h4>
+                    <p style="margin:0; font-size:0.8rem; color:#aaa;">${details}</p>
+                    <p style="margin:0; font-size:0.75rem; color:#888;">Requested on: ${date}</p>
+                </div>
+                <div class="list-actions">
+                    <span style="padding:0.3rem 0.8rem; border-radius:12px; font-size:0.8rem; font-weight:600; background:rgba(255,255,255,0.1); color:${statusColor}">
+                        ${item.status}
+                    </span>
+                </div>
+            </div>`;
+        }).join('');
     }
 
     // Edit Mode Logic
