@@ -238,18 +238,52 @@ body {
 .ad-placement {
     width: 100%;
     max-width: 1200px;
-    margin: 1.5rem auto;
+    margin: 2rem auto;
     text-align: center;
     overflow: hidden;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 1rem;
+    min-height: 50px;
 }
+
+.ad-placement.sidebar {
+    width: 160px;
+    margin: 0;
+}
+
+.ad-placement.square {
+    width: 300px;
+    height: 250px;
+}
+
+.ad-placement iframe, .ad-placement ins {
+    margin: 0 auto !important;
+    display: block !important;
+}
+
+.ad-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+}
+
 .ad-placement img {
     max-width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition);
 }
+
+.ad-placement img:hover {
+    transform: scale(1.02);
+}
+
 
 .content-row {
     margin-bottom: 3rem;
@@ -1482,4 +1516,65 @@ body {
         padding: 0.4rem 0.9rem;
         font-size: 0.78rem;
     }
+}
+
+/* =============================================
+   ANTI-ADBLOCK UI
+   ============================================= */
+.adblock-notice {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.85);
+    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    animation: adblockFadeIn 0.5s ease;
+}
+
+.adblock-content {
+    background: var(--surface);
+    max-width: 500px;
+    padding: 3rem;
+    border-radius: 24px;
+    text-align: center;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+}
+
+.adblock-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 0 10px var(--primary));
+}
+
+.adblock-content h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.adblock-content p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.adblock-content .btn {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+@keyframes adblockFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.hidden {
+    display: none !important;
 }

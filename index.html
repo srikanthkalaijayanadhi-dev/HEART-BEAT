@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,15 +9,29 @@
     <meta name="robots" content="index, follow">
     <title>HEARTBEAT | Premium Cinematic OTT Platform</title>
     <!-- SEO Meta Tags -->
-    <meta name="description" content="HEARTBEAT is a personal demo OTT platform for streaming movies and series. Browse curated content in a premium cinematic experience.">
+    <meta name="description"
+        content="HEARTBEAT is a personal demo OTT platform for streaming movies and series. Browse curated content in a premium cinematic experience.">
     <meta name="keywords" content="OTT, movies, series, streaming, HEARTBEAT, entertainment">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Main Stylesheet -->
+    <!-- Performance Optimization: Preconnect to ad domains -->
+    <link rel="preconnect" href="https://pl29146922.profitablecpmratenetwork.com">
+    <link rel="preconnect" href="https://pl29146923.profitablecpmratenetwork.com">
+    <link rel="preconnect" href="https://pl29146924.profitablecpmratenetwork.com">
+    <link rel="preconnect" href="https://www.highperformanceformat.com">
+    <link rel="dns-prefetch" href="https://pl29146922.profitablecpmratenetwork.com">
+    <link rel="dns-prefetch" href="https://pl29146923.profitablecpmratenetwork.com">
+    <link rel="dns-prefetch" href="https://pl29146924.profitablecpmratenetwork.com">
+    <link rel="dns-prefetch" href="https://www.highperformanceformat.com">
+
     <link rel="stylesheet" href="style.css">
+    <!-- Popunder Ad -->
+    <script src="https://pl29146922.profitablecpmratenetwork.com/45/8c/9f/458c9f092462724a78a8ae9c2bf80302.js" async></script>
 </head>
+
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar" id="navbar">
@@ -54,7 +69,8 @@
             <span class="badge featured-badge">Featured Today</span>
             <h1 class="hero-title" id="featured-title">Echoes of Tomorrow</h1>
             <p class="hero-description" id="featured-desc">
-                In a world where time is a currency, a mysterious traveler must race against the sunset to save humanity from an eternal night.
+                In a world where time is a currency, a mysterious traveler must race against the sunset to save humanity
+                from an eternal night.
             </p>
             <div class="hero-buttons">
                 <button class="btn btn-primary" id="hero-play-btn">
@@ -72,6 +88,9 @@
 
     <!-- Home Bottom Ad Slot -->
     <div id="ad-home_bottom" class="ad-placement"></div>
+
+    <!-- Native Ad Slot -->
+    <div class="ad-placement" data-ad-type="native"></div>
 
     <!-- Footer -->
     <footer class="footer footer-container">
@@ -114,20 +133,33 @@
         </div>
     </nav>
 
+    <!-- Anti-Adblock Notice -->
+    <div id="adblock-notice" class="adblock-notice hidden">
+        <div class="adblock-content">
+            <div class="adblock-icon">🛡️</div>
+            <h2>Ad-Blocker Detected</h2>
+            <p>Our platform is free because of ads. Please disable your ad-blocker or whitelist HEARTBEAT to continue enjoying cinematic movies in HD.</p>
+            <button class="btn btn-primary" onclick="location.reload()">I've Disabled It, Refresh</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('adblock-notice').classList.add('hidden')">Maybe Later</button>
+        </div>
+    </div>
+
     <!-- Scripts -->
+    <script src="https://pl29146924.profitablecpmratenetwork.com/60/cb/5f/60cb5f0889c1e330ca1d61468cf24463.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
     <script src="supabase-config.js"></script>
     <script src="script.js"></script>
+    <script src="ads.js"></script>
     <script>
         // ── Shared filter engine ───────────────────────────────────────────
         const heroBanner = document.getElementById('hero-banner');
         const navItems = document.querySelectorAll('.mobile-nav-item');
         const filterMap = {
-            'mob-home':     'all',
-            'mob-movies':   'Movie',
-            'mob-series':   'Series',
+            'mob-home': 'all',
+            'mob-movies': 'Movie',
+            'mob-series': 'Series',
             'mob-trending': 'Trending',
-            'mob-admin':    null
+            'mob-admin': null
         };
         const mobMap = { all: 'mob-home', Movie: 'mob-movies', Series: 'mob-series', Trending: 'mob-trending' };
         const deskMap = { all: 'dnav-home', Movie: 'dnav-movies', Series: 'dnav-series', Trending: 'dnav-trending' };
@@ -155,8 +187,8 @@
         }
 
         // ── Mobile bottom nav ─────────────────────────────────────────────
-        navItems.forEach(function(item) {
-            item.addEventListener('click', function(e) {
+        navItems.forEach(function (item) {
+            item.addEventListener('click', function (e) {
                 const filter = filterMap[this.id];
                 if (filter === null) return; // admin link — let href work normally
                 e.preventDefault();
@@ -165,13 +197,13 @@
         });
 
         // ── Desktop nav links ─────────────────────────────────────────────
-        document.querySelectorAll('#desktop-nav-links a').forEach(function(link) {
-            link.addEventListener('click', function(e) {
+        document.querySelectorAll('#desktop-nav-links a').forEach(function (link) {
+            link.addEventListener('click', function (e) {
                 e.preventDefault();
                 applyFilter(this.dataset.filter || 'all');
             });
         });
     </script>
 </body>
-</html>
 
+</html>

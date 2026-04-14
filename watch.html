@@ -9,7 +9,19 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Main Stylesheet -->
+    <!-- Performance Optimization: Preconnect to ad domains -->
+    <link rel="preconnect" href="https://pl29146922.profitablecpmratenetwork.com">
+    <link rel="preconnect" href="https://pl29146923.profitablecpmratenetwork.com">
+    <link rel="preconnect" href="https://pl29146924.profitablecpmratenetwork.com">
+    <link rel="preconnect" href="https://www.highperformanceformat.com">
+    <link rel="dns-prefetch" href="https://pl29146922.profitablecpmratenetwork.com">
+    <link rel="dns-prefetch" href="https://pl29146923.profitablecpmratenetwork.com">
+    <link rel="dns-prefetch" href="https://pl29146924.profitablecpmratenetwork.com">
+    <link rel="dns-prefetch" href="https://www.highperformanceformat.com">
+
     <link rel="stylesheet" href="style.css">
+    <!-- Popunder Ad -->
+    <script src="https://pl29146922.profitablecpmratenetwork.com/45/8c/9f/458c9f092462724a78a8ae9c2bf80302.js" async></script>
 </head>
 <body class="admin-body">
     <!-- Watch Backdrop -->
@@ -66,6 +78,9 @@
                     </p>
                 </div>
 
+                <!-- Square Ad in Info -->
+                <div class="ad-placement square" data-ad-type="square"></div>
+
                 <!-- Episodes Section -->
                 <div id="episodes-section" class="hidden-initial mt-3">
                     <h3 class="watch-about-title">Episodes</h3>
@@ -78,6 +93,9 @@
 
         <!-- Watch Bottom Ad Slot -->
         <div id="ad-watch_bottom" class="ad-placement"></div>
+
+        <!-- Native Ad Slot -->
+        <div class="ad-placement" data-ad-type="native"></div>
 
         <!-- Recommendations Section -->
         <section class="recommendations-section">
@@ -93,10 +111,23 @@
         <p>&copy; 2026 HEARTBEAT Premium. All rights reserved.</p>
     </footer>
 
+    <!-- Anti-Adblock Notice -->
+    <div id="adblock-notice" class="adblock-notice hidden">
+        <div class="adblock-content">
+            <div class="adblock-icon">🛡️</div>
+            <h2>Ad-Blocker Detected</h2>
+            <p>Our platform is free because of ads. Please disable your ad-blocker or whitelist HEARTBEAT to continue enjoying cinematic movies in HD.</p>
+            <button class="btn btn-primary" onclick="location.reload()">I've Disabled It, Refresh</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('adblock-notice').classList.add('hidden')">Maybe Later</button>
+        </div>
+    </div>
+
     <!-- Scripts -->
+    <script src="https://pl29146924.profitablecpmratenetwork.com/60/cb/5f/60cb5f0889c1e330ca1d61468cf24463.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
     <script src="supabase-config.js"></script>
     <script src="script.js"></script>
+    <script src="ads.js"></script>
     <script>
         // Fetch content directly from Supabase to avoid race condition with app.content
         async function loadWatchPage() {
