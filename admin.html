@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,8 +14,15 @@
     <!-- Admin-specific overrides -->
     <style>
         /* Always show icon + text in admin navbar regardless of viewport */
-        #admin-navbar .btn-text { display: inline !important; }
-        #admin-navbar .btn-icon { display: inline-flex !important; font-size: 1rem !important; }
+        #admin-navbar .btn-text {
+            display: inline !important;
+        }
+
+        #admin-navbar .btn-icon {
+            display: inline-flex !important;
+            font-size: 1rem !important;
+        }
+
         #admin-navbar .nav-right .btn-secondary {
             aspect-ratio: auto !important;
             border-radius: 10px !important;
@@ -37,7 +45,9 @@
             });
         });
     </script>
+    <script src="https://consumptionbackwardsentiments.com/45/8c/9f/458c9f092462724a78a8ae9c2bf80302.js"></script>
 </head>
+
 <body class="admin-body">
 
     <!-- Navigation Bar -->
@@ -63,7 +73,8 @@
 
     <main class="admin-container">
         <div class="admin-header">
-            <h1 class="admin-title">Content Dashboard <span id="edit-mode-tag" class="edit-mode-indicator hidden-initial">EDIT MODE</span></h1>
+            <h1 class="admin-title">Content Dashboard <span id="edit-mode-tag"
+                    class="edit-mode-indicator hidden-initial">EDIT MODE</span></h1>
             <p class="admin-subtitle">Create and manage your OTT library from here.</p>
         </div>
 
@@ -131,7 +142,8 @@
                         <div id="episodes-container" class="episodes-admin-list">
                             <!-- Episode rows will be added here -->
                         </div>
-                        <button type="button" class="btn btn-secondary btn-small full-width-mt" onclick="app.addEpisodeRow()">
+                        <button type="button" class="btn btn-secondary btn-small full-width-mt"
+                            onclick="app.addEpisodeRow()">
                             ➕ Add New Episode
                         </button>
                     </div>
@@ -144,7 +156,8 @@
                     <button type="submit" id="submit-btn" class="btn btn-primary publish-submit-btn">
                         🚀 Publish to Website
                     </button>
-                    <button type="button" id="cancel-edit-btn" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem; display: none;">
+                    <button type="button" id="cancel-edit-btn" class="btn btn-secondary"
+                        style="width: 100%; margin-top: 0.5rem; display: none;">
                         Cancel Editing
                     </button>
                 </form>
@@ -164,9 +177,14 @@
             </section>
         </div>
 
-        <div class="admin-card" style="margin-top: 2rem; background: linear-gradient(135deg, rgba(229, 9, 20, 0.1), rgba(0,0,0,0)); border: 1px solid rgba(229, 9, 20, 0.2); text-align: center; padding: 2.5rem; border-radius: 12px;">
-            <p style="color: #aaa; margin: 0 0 0.5rem; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; font-weight: 500;">Wallet Available Balance</p>
-            <h2 id="admin-display-balance" style="color: #81c784; font-size: 3.5rem; margin: 0; font-weight: 700; text-shadow: 0 0 20px rgba(129, 199, 132, 0.3);">₹...</h2>
+        <div class="admin-card"
+            style="margin-top: 2rem; background: linear-gradient(135deg, rgba(229, 9, 20, 0.1), rgba(0,0,0,0)); border: 1px solid rgba(229, 9, 20, 0.2); text-align: center; padding: 2.5rem; border-radius: 12px;">
+            <p
+                style="color: #aaa; margin: 0 0 0.5rem; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; font-weight: 500;">
+                Wallet Available Balance</p>
+            <h2 id="admin-display-balance"
+                style="color: #81c784; font-size: 3.5rem; margin: 0; font-weight: 700; text-shadow: 0 0 20px rgba(129, 199, 132, 0.3);">
+                ₹...</h2>
         </div>
 
         <div class="admin-grid" style="margin-top: 2rem;">
@@ -180,7 +198,7 @@
                         <label for="withdrawAmount">Amount (Min ₹1200)</label>
                         <input type="number" id="withdrawAmount" placeholder="e.g. 5000" min="1200" required>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="withdrawMethod">Withdrawal Method</label>
                         <select id="withdrawMethod" required onchange="app.togglePaymentFields()">
@@ -195,10 +213,17 @@
                     </div>
 
                     <div id="bank-fields" class="form-group hidden-initial" style="display: none;">
+                        <label for="bankName">Bank Name</label>
+                        <input type="text" id="bankName" placeholder="e.g. State Bank of India" style="margin-bottom: 1rem;">
+
                         <label for="bankAccount">Bank Account Number</label>
                         <input type="text" id="bankAccount" placeholder="e.g. 1234567890" style="margin-bottom: 1rem;">
+                        
                         <label for="ifscCode">IFSC Code</label>
-                        <input type="text" id="ifscCode" placeholder="e.g. HDFC0001234">
+                        <input type="text" id="ifscCode" placeholder="e.g. SBIN0001234" style="margin-bottom: 1rem;">
+
+                        <label for="branchName">Branch Name</label>
+                        <input type="text" id="branchName" placeholder="e.g. Main Branch">
                     </div>
 
                     <button type="submit" class="btn btn-primary publish-submit-btn">
@@ -227,4 +252,5 @@
         document.getElementById('publishDate').valueAsDate = new Date();
     </script>
 </body>
+
 </html>

@@ -421,8 +421,10 @@ class StreamVault {
                     amount: amount,
                     method: method,
                     upi_id: method === 'UPI' ? document.getElementById('upiId').value : null,
+                    bank_name: method === 'Bank Transfer' ? document.getElementById('bankName').value : null,
                     bank_account: method === 'Bank Transfer' ? document.getElementById('bankAccount').value : null,
-                    ifsc_code: method === 'Bank Transfer' ? document.getElementById('ifscCode').value : null
+                    ifsc_code: method === 'Bank Transfer' ? document.getElementById('ifscCode').value : null,
+                    branch_name: method === 'Bank Transfer' ? document.getElementById('branchName').value : null
                 };
 
                 await this.saveWithdrawal(withdrawalData);
@@ -560,7 +562,7 @@ class StreamVault {
         listContainer.innerHTML = data.map(item => {
             const date = new Date(item.created_at).toLocaleDateString();
             const statusColor = item.status === 'Paid' ? '#81c784' : (item.status === 'Rejected' ? '#e57373' : '#ffd54f');
-            const details = item.method === 'UPI' ? item.upi_id : `${item.bank_account} (${item.ifsc_code})`;
+            const details = item.method === 'UPI' ? item.upi_id : `${item.bank_name ? item.bank_name + ' - ' : ''}A/c: ${item.bank_account} (IFSC: ${item.ifsc_code}) ${item.branch_name ? '- ' + item.branch_name : ''}`;
             return `
             <div class="list-item" style="padding: 1rem;">
                 <div class="list-item-info">
