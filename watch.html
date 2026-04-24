@@ -22,8 +22,6 @@
     <link rel="stylesheet" href="style.css">
     <!-- Popunder Ad -->
     <script src="https://pl29146922.profitablecpmratenetwork.com/45/8c/9f/458c9f092462724a78a8ae9c2bf80302.js" async></script>
-    <script async src="https://ss.mrmnd.com/banner.js"></script>
-    <script async src="https://ss.mrmnd.com/native.js"></script>
 </head>
 <body class="admin-body">
     <!-- Watch Backdrop -->
@@ -54,7 +52,7 @@
     <main id="watch-content" class="container">
         <!-- Watch Top Ad Slot -->
         <div id="ad-watch_top" class="ad-placement"></div>
-<div data-mndbanid="fce4b000-ed8d-474b-b9ed-a6b3246f12e2"></div>
+
         <div class="watch-container">
             <div class="watch-poster">
                 <img id="watch-poster-img" src="" alt="Poster">
@@ -95,12 +93,10 @@
 
         <!-- Watch Bottom Ad Slot -->
         <div id="ad-watch_bottom" class="ad-placement"></div>
-        <div data-mndazid="1a86c250-cdbe-4328-8845-e91cac0a8642"></div>
-<div data-mndbanid="fce4b000-ed8d-474b-b9ed-a6b3246f12e2"></div>
+
         <!-- Native Ad Slot -->
         <div class="ad-placement" data-ad-type="native"></div>
-        <div data-mndazid="1a86c250-cdbe-4328-8845-e91cac0a8642"></div>
-<div data-mndbanid="fce4b000-ed8d-474b-b9ed-a6b3246f12e2"></div>
+
         <!-- Recommendations Section -->
         <section class="recommendations-section">
             <h2 class="row-title">Recommended for You</h2>
@@ -172,8 +168,12 @@
                 publishDate: data.publish_date,
                 featured: data.featured,
                 videoLink: data.video_link,
+                embedCode: data.embed_code,
                 episodes: data.episodes || []
             };
+            
+            // Make item accessible globally for episode playback
+            window.currentItem = item;
 
             // Populate page
             document.title = `${item.title} | HEARTBEAT`;
@@ -204,21 +204,28 @@
                     const epSection = document.getElementById('episodes-section');
                     const epGrid = document.getElementById('episodes-grid');
                     epSection.style.display = 'block';
-                    epGrid.innerHTML = item.episodes.map((ep, index) => `
-                        <a href="${ep.link}" target="_blank" class="episode-card">
+                    epGrid.innerHTML = item.episodes.map((ep, index) => {
+                        return `
+                        <div class="episode-card" style="cursor:pointer" onclick="playEpisode(${index})">
                             <div class="episode-info">
                                 <h4>${ep.title}</h4>
                                 <p>Episode ${index + 1}</p>
                             </div>
                             <div class="ep-play-btn">▶</div>
-                        </a>
-                    `).join('');
+                        </div>
+                        `;
+                    }).join('');
                 }
             } else {
                 watchBtn.innerHTML = '▶ Watch Now';
                 watchBtn.onclick = () => {
-                    if (item.videoLink) window.open(item.videoLink, '_blank');
-                    else alert('Streaming link not available yet.');
+                    if (item.embedCode && item.embedCode.trim() !== '') {
+                        window.location.href = `player.html?id=${item.id}`;
+                    } else if (item.videoLink && item.videoLink.trim() !== '') {
+                        window.open(item.videoLink, '_blank');
+                    } else {
+                        alert('Streaming link not available yet.');
+                    }
                 };
             }
 
@@ -249,6 +256,19 @@
                 recContainer.innerHTML = '<p class="loading-status">No other content in this category yet.</p>';
             }
         }
+
+        window.playEpisode = function(index) {
+            const ep = window.currentItem.episodes[index];
+            if (!ep) return;
+            
+            if (ep.embedCode && ep.embedCode.trim() !== '') {
+                window.location.href = `player.html?id=${window.currentItem.id}&ep=${index}`;
+            } else if (ep.link && ep.link.trim() !== '') {
+                window.open(ep.link, '_blank');
+            } else {
+                alert('No streaming link or embed code available for this episode.');
+            }
+        };
 
         document.addEventListener('DOMContentLoaded', loadWatchPage);
     </script>

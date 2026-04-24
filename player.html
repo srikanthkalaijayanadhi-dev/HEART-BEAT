@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinematic Player | HEARTBEAT Premium</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Popunder Ad -->
+    <script src="https://pl29146922.profitablecpmratenetwork.com/45/8c/9f/458c9f092462724a78a8ae9c2bf80302.js" async></script>
+    
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #050505;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Minimal Header */
+        .player-header {
+            width: 100%;
+            padding: 1.5rem 4%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+        
+        .back-btn {
+            color: #ccc;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            color: #e50914;
+        }
+        
+        .playing-title {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e50914;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        /* Video Container */
+        .player-wrapper {
+            flex: 1;
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0 4% 2rem;
+            box-sizing: border-box;
+        }
+        
+        .video-container {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+        }
+        
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        /* Ad Placement Zones */
+        .ad-zone {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin: 1rem 0;
+            min-height: 50px;
+        }
+        
+        .ad-zone iframe {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Top Ad Slot (Reusing your watch_top DB logic so ads appear instantly) -->
+    <div class="ad-zone" id="ad-watch_top"></div>
+
+    <div class="player-header">
+        <a href="index.html" id="back-link" class="back-btn">
+            <span style="font-size:1.2rem;">←</span> Back to Details
+        </a>
+        <h1 id="playing-title" class="playing-title">Loading Player...</h1>
+        <div style="width: 100px;"></div> <!-- Spacer for flex balance -->
+    </div>
+
+    <div class="player-wrapper">
+        <div id="video-target" class="video-container">
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align: center; color: #888;">
+                ⏳ Fetching stream safely...
+            </div>
+        </div>
+        
+        <!-- Native / Banner Ad Code -->
+        <div class="ad-zone" id="ad-watch_bottom" style="margin-top: 2rem;"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://pl29146924.profitablecpmratenetwork.com/60/cb/5f/60cb5f0889c1e330ca1d61468cf24463.js" async></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+    <script src="supabase-config.js"></script>
+    
+    <script>
+        async function loadPlayer() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const ep = params.get('ep'); // Index if series episode
+
+            // Setup back button
+            if (id) {
+                document.getElementById('back-link').href = `watch.html?id=${id}`;
+            }
+
+            if (!id) {
+                document.getElementById('video-target').innerHTML = '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#e57373;">Invalid Link. Cannot load player.</div>';
+                return;
+            }
+
+            // Fetch Content
+            const { data, error } = await supabase
+                .from('content')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (error || !data) {
+                document.getElementById('video-target').innerHTML = '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#e57373;">Content not found in Database.</div>';
+                return;
+            }
+
+            let embedCode = null;
+            let displayTitle = data.title;
+
+            // Determine if playing Movie or Episode
+            if (ep !== null && data.episodes && data.episodes[ep]) {
+                const epObj = data.episodes[ep];
+                embedCode = epObj.embedCode;
+                displayTitle = `${data.title} - ${epObj.title}`;
+            } else {
+                embedCode = data.embed_code;
+            }
+
+            // Set UI Titles
+            document.getElementById('playing-title').textContent = displayTitle;
+            document.title = 'Playing ' + displayTitle + ' | HEARTBEAT';
+
+            // Inject iFrame safely
+            if (embedCode && embedCode.trim() !== '') {
+                document.getElementById('video-target').innerHTML = embedCode;
+                // Force iframe to fill 100% of container
+                const iframe = document.getElementById('video-target').querySelector('iframe');
+                if (iframe) {
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                    iframe.style.position = 'absolute';
+                    iframe.style.top = '0';
+                    iframe.style.left = '0';
+                }
+            } else {
+                document.getElementById('video-target').innerHTML = '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#e57373;">No embedded video found for this title.</div>';
+            }
+            
+            // Fetch Global Ads dynamically from DB
+            const { data: adsData } = await supabase.from('ads').select('*').eq('is_active', true);
+            if (adsData) {
+                adsData.forEach(ad => {
+                    // Try to place the ad if the slot exists on this player page
+                    const slotEl = document.getElementById(`ad-${ad.slot_id}`);
+                    if (slotEl && ad.code) {
+                        slotEl.innerHTML = ad.code;
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPlayer);
+    </script>
+</body>
+</html>
